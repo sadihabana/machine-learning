@@ -1,0 +1,2107 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Data_Cleaning_GroupA.ipynb",
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "iRD12ucdG_22"
+      },
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from sklearn.preprocessing import StandardScaler\n",
+        "from sklearn.decomposition import PCA\n",
+        "from sklearn.linear_model import LassoCV"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "U9BeC6UjPWy6"
+      },
+      "source": [
+        "# Get the Dataset"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "hqaTeAbNHDld"
+      },
+      "source": [
+        "data=pd.read_csv('/content/drive/MyDrive/Machine Learning/Data/house-prices-advanced-regression-techniques/modified_data.csv')"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 132
+        },
+        "id": "AwyN2dxBHXSV",
+        "outputId": "a2c08df0-feb7-4071-8854-5e72df39dc86"
+      },
+      "source": [
+        "data.head(2)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Id</th>\n",
+              "      <th>MSSubClass</th>\n",
+              "      <th>MSZoning</th>\n",
+              "      <th>LotFrontage</th>\n",
+              "      <th>LotArea</th>\n",
+              "      <th>Street</th>\n",
+              "      <th>LotShape</th>\n",
+              "      <th>LandContour</th>\n",
+              "      <th>Utilities</th>\n",
+              "      <th>LotConfig</th>\n",
+              "      <th>LandSlope</th>\n",
+              "      <th>Neighborhood</th>\n",
+              "      <th>Condition1</th>\n",
+              "      <th>Condition2</th>\n",
+              "      <th>BldgType</th>\n",
+              "      <th>HouseStyle</th>\n",
+              "      <th>OverallQual</th>\n",
+              "      <th>OverallCond</th>\n",
+              "      <th>YearBuilt</th>\n",
+              "      <th>YearRemodAdd</th>\n",
+              "      <th>RoofStyle</th>\n",
+              "      <th>RoofMatl</th>\n",
+              "      <th>Exterior1st</th>\n",
+              "      <th>Exterior2nd</th>\n",
+              "      <th>MasVnrType</th>\n",
+              "      <th>MasVnrArea</th>\n",
+              "      <th>ExterQual</th>\n",
+              "      <th>ExterCond</th>\n",
+              "      <th>Foundation</th>\n",
+              "      <th>BsmtQual</th>\n",
+              "      <th>BsmtCond</th>\n",
+              "      <th>BsmtExposure</th>\n",
+              "      <th>BsmtFinType1</th>\n",
+              "      <th>BsmtFinSF1</th>\n",
+              "      <th>BsmtFinType2</th>\n",
+              "      <th>BsmtFinSF2</th>\n",
+              "      <th>BsmtUnfSF</th>\n",
+              "      <th>TotalBsmtSF</th>\n",
+              "      <th>Heating</th>\n",
+              "      <th>HeatingQC</th>\n",
+              "      <th>CentralAir</th>\n",
+              "      <th>Electrical</th>\n",
+              "      <th>1stFlrSF</th>\n",
+              "      <th>2ndFlrSF</th>\n",
+              "      <th>LowQualFinSF</th>\n",
+              "      <th>GrLivArea</th>\n",
+              "      <th>BsmtFullBath</th>\n",
+              "      <th>BsmtHalfBath</th>\n",
+              "      <th>FullBath</th>\n",
+              "      <th>HalfBath</th>\n",
+              "      <th>BedroomAbvGr</th>\n",
+              "      <th>KitchenAbvGr</th>\n",
+              "      <th>KitchenQual</th>\n",
+              "      <th>TotRmsAbvGrd</th>\n",
+              "      <th>Functional</th>\n",
+              "      <th>Fireplaces</th>\n",
+              "      <th>FireplaceQu</th>\n",
+              "      <th>GarageType</th>\n",
+              "      <th>GarageYrBlt</th>\n",
+              "      <th>GarageFinish</th>\n",
+              "      <th>GarageCars</th>\n",
+              "      <th>GarageArea</th>\n",
+              "      <th>GarageQual</th>\n",
+              "      <th>GarageCond</th>\n",
+              "      <th>PavedDrive</th>\n",
+              "      <th>WoodDeckSF</th>\n",
+              "      <th>OpenPorchSF</th>\n",
+              "      <th>EnclosedPorch</th>\n",
+              "      <th>3SsnPorch</th>\n",
+              "      <th>ScreenPorch</th>\n",
+              "      <th>PoolArea</th>\n",
+              "      <th>MiscVal</th>\n",
+              "      <th>MoSold</th>\n",
+              "      <th>YrSold</th>\n",
+              "      <th>SaleType</th>\n",
+              "      <th>SaleCondition</th>\n",
+              "      <th>SalePrice</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>1</td>\n",
+              "      <td>60</td>\n",
+              "      <td>RL</td>\n",
+              "      <td>65.0</td>\n",
+              "      <td>8450</td>\n",
+              "      <td>Pave</td>\n",
+              "      <td>Reg</td>\n",
+              "      <td>Lvl</td>\n",
+              "      <td>AllPub</td>\n",
+              "      <td>Inside</td>\n",
+              "      <td>Gtl</td>\n",
+              "      <td>CollgCr</td>\n",
+              "      <td>Norm</td>\n",
+              "      <td>Norm</td>\n",
+              "      <td>1Fam</td>\n",
+              "      <td>2Story</td>\n",
+              "      <td>7</td>\n",
+              "      <td>5</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>Gable</td>\n",
+              "      <td>CompShg</td>\n",
+              "      <td>VinylSd</td>\n",
+              "      <td>VinylSd</td>\n",
+              "      <td>BrkFace</td>\n",
+              "      <td>196.0</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>PConc</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>No</td>\n",
+              "      <td>GLQ</td>\n",
+              "      <td>706</td>\n",
+              "      <td>Unf</td>\n",
+              "      <td>0</td>\n",
+              "      <td>150</td>\n",
+              "      <td>856</td>\n",
+              "      <td>GasA</td>\n",
+              "      <td>Ex</td>\n",
+              "      <td>Y</td>\n",
+              "      <td>SBrkr</td>\n",
+              "      <td>856</td>\n",
+              "      <td>854</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1710</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>1</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>8</td>\n",
+              "      <td>Typ</td>\n",
+              "      <td>0</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>Attchd</td>\n",
+              "      <td>2003.0</td>\n",
+              "      <td>RFn</td>\n",
+              "      <td>2</td>\n",
+              "      <td>548</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>Y</td>\n",
+              "      <td>0</td>\n",
+              "      <td>61</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2008</td>\n",
+              "      <td>WD</td>\n",
+              "      <td>Normal</td>\n",
+              "      <td>208500</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>2</td>\n",
+              "      <td>20</td>\n",
+              "      <td>RL</td>\n",
+              "      <td>80.0</td>\n",
+              "      <td>9600</td>\n",
+              "      <td>Pave</td>\n",
+              "      <td>Reg</td>\n",
+              "      <td>Lvl</td>\n",
+              "      <td>AllPub</td>\n",
+              "      <td>FR2</td>\n",
+              "      <td>Gtl</td>\n",
+              "      <td>Veenker</td>\n",
+              "      <td>Feedr</td>\n",
+              "      <td>Norm</td>\n",
+              "      <td>1Fam</td>\n",
+              "      <td>1Story</td>\n",
+              "      <td>6</td>\n",
+              "      <td>8</td>\n",
+              "      <td>1976</td>\n",
+              "      <td>1976</td>\n",
+              "      <td>Gable</td>\n",
+              "      <td>CompShg</td>\n",
+              "      <td>MetalSd</td>\n",
+              "      <td>MetalSd</td>\n",
+              "      <td>None</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>CBlock</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>ALQ</td>\n",
+              "      <td>978</td>\n",
+              "      <td>Unf</td>\n",
+              "      <td>0</td>\n",
+              "      <td>284</td>\n",
+              "      <td>1262</td>\n",
+              "      <td>GasA</td>\n",
+              "      <td>Ex</td>\n",
+              "      <td>Y</td>\n",
+              "      <td>SBrkr</td>\n",
+              "      <td>1262</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1262</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>6</td>\n",
+              "      <td>Typ</td>\n",
+              "      <td>1</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>Attchd</td>\n",
+              "      <td>1976.0</td>\n",
+              "      <td>RFn</td>\n",
+              "      <td>2</td>\n",
+              "      <td>460</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>Y</td>\n",
+              "      <td>298</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>2007</td>\n",
+              "      <td>WD</td>\n",
+              "      <td>Normal</td>\n",
+              "      <td>181500</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   Id  MSSubClass MSZoning  ...  SaleType  SaleCondition SalePrice\n",
+              "0   1          60       RL  ...        WD         Normal    208500\n",
+              "1   2          20       RL  ...        WD         Normal    181500\n",
+              "\n",
+              "[2 rows x 77 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 3
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "IxpsgOI7HZd7",
+        "outputId": "455ac195-36c9-4f83-a6a9-67d8806d65a9"
+      },
+      "source": [
+        "data.shape"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(1460, 77)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "xBphL5QjHeUU"
+      },
+      "source": [
+        "data.drop('Id',inplace=True,axis=1)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 101
+        },
+        "id": "0O8TL2EqHxEb",
+        "outputId": "5f3ad89d-ac49-4b96-977b-5b12146f89e8"
+      },
+      "source": [
+        "data.head(1)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>MSSubClass</th>\n",
+              "      <th>MSZoning</th>\n",
+              "      <th>LotFrontage</th>\n",
+              "      <th>LotArea</th>\n",
+              "      <th>Street</th>\n",
+              "      <th>LotShape</th>\n",
+              "      <th>LandContour</th>\n",
+              "      <th>Utilities</th>\n",
+              "      <th>LotConfig</th>\n",
+              "      <th>LandSlope</th>\n",
+              "      <th>Neighborhood</th>\n",
+              "      <th>Condition1</th>\n",
+              "      <th>Condition2</th>\n",
+              "      <th>BldgType</th>\n",
+              "      <th>HouseStyle</th>\n",
+              "      <th>OverallQual</th>\n",
+              "      <th>OverallCond</th>\n",
+              "      <th>YearBuilt</th>\n",
+              "      <th>YearRemodAdd</th>\n",
+              "      <th>RoofStyle</th>\n",
+              "      <th>RoofMatl</th>\n",
+              "      <th>Exterior1st</th>\n",
+              "      <th>Exterior2nd</th>\n",
+              "      <th>MasVnrType</th>\n",
+              "      <th>MasVnrArea</th>\n",
+              "      <th>ExterQual</th>\n",
+              "      <th>ExterCond</th>\n",
+              "      <th>Foundation</th>\n",
+              "      <th>BsmtQual</th>\n",
+              "      <th>BsmtCond</th>\n",
+              "      <th>BsmtExposure</th>\n",
+              "      <th>BsmtFinType1</th>\n",
+              "      <th>BsmtFinSF1</th>\n",
+              "      <th>BsmtFinType2</th>\n",
+              "      <th>BsmtFinSF2</th>\n",
+              "      <th>BsmtUnfSF</th>\n",
+              "      <th>TotalBsmtSF</th>\n",
+              "      <th>Heating</th>\n",
+              "      <th>HeatingQC</th>\n",
+              "      <th>CentralAir</th>\n",
+              "      <th>Electrical</th>\n",
+              "      <th>1stFlrSF</th>\n",
+              "      <th>2ndFlrSF</th>\n",
+              "      <th>LowQualFinSF</th>\n",
+              "      <th>GrLivArea</th>\n",
+              "      <th>BsmtFullBath</th>\n",
+              "      <th>BsmtHalfBath</th>\n",
+              "      <th>FullBath</th>\n",
+              "      <th>HalfBath</th>\n",
+              "      <th>BedroomAbvGr</th>\n",
+              "      <th>KitchenAbvGr</th>\n",
+              "      <th>KitchenQual</th>\n",
+              "      <th>TotRmsAbvGrd</th>\n",
+              "      <th>Functional</th>\n",
+              "      <th>Fireplaces</th>\n",
+              "      <th>FireplaceQu</th>\n",
+              "      <th>GarageType</th>\n",
+              "      <th>GarageYrBlt</th>\n",
+              "      <th>GarageFinish</th>\n",
+              "      <th>GarageCars</th>\n",
+              "      <th>GarageArea</th>\n",
+              "      <th>GarageQual</th>\n",
+              "      <th>GarageCond</th>\n",
+              "      <th>PavedDrive</th>\n",
+              "      <th>WoodDeckSF</th>\n",
+              "      <th>OpenPorchSF</th>\n",
+              "      <th>EnclosedPorch</th>\n",
+              "      <th>3SsnPorch</th>\n",
+              "      <th>ScreenPorch</th>\n",
+              "      <th>PoolArea</th>\n",
+              "      <th>MiscVal</th>\n",
+              "      <th>MoSold</th>\n",
+              "      <th>YrSold</th>\n",
+              "      <th>SaleType</th>\n",
+              "      <th>SaleCondition</th>\n",
+              "      <th>SalePrice</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>60</td>\n",
+              "      <td>RL</td>\n",
+              "      <td>65.0</td>\n",
+              "      <td>8450</td>\n",
+              "      <td>Pave</td>\n",
+              "      <td>Reg</td>\n",
+              "      <td>Lvl</td>\n",
+              "      <td>AllPub</td>\n",
+              "      <td>Inside</td>\n",
+              "      <td>Gtl</td>\n",
+              "      <td>CollgCr</td>\n",
+              "      <td>Norm</td>\n",
+              "      <td>Norm</td>\n",
+              "      <td>1Fam</td>\n",
+              "      <td>2Story</td>\n",
+              "      <td>7</td>\n",
+              "      <td>5</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>Gable</td>\n",
+              "      <td>CompShg</td>\n",
+              "      <td>VinylSd</td>\n",
+              "      <td>VinylSd</td>\n",
+              "      <td>BrkFace</td>\n",
+              "      <td>196.0</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>PConc</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>No</td>\n",
+              "      <td>GLQ</td>\n",
+              "      <td>706</td>\n",
+              "      <td>Unf</td>\n",
+              "      <td>0</td>\n",
+              "      <td>150</td>\n",
+              "      <td>856</td>\n",
+              "      <td>GasA</td>\n",
+              "      <td>Ex</td>\n",
+              "      <td>Y</td>\n",
+              "      <td>SBrkr</td>\n",
+              "      <td>856</td>\n",
+              "      <td>854</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1710</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>1</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>Gd</td>\n",
+              "      <td>8</td>\n",
+              "      <td>Typ</td>\n",
+              "      <td>0</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>Attchd</td>\n",
+              "      <td>2003.0</td>\n",
+              "      <td>RFn</td>\n",
+              "      <td>2</td>\n",
+              "      <td>548</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>TA</td>\n",
+              "      <td>Y</td>\n",
+              "      <td>0</td>\n",
+              "      <td>61</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2008</td>\n",
+              "      <td>WD</td>\n",
+              "      <td>Normal</td>\n",
+              "      <td>208500</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   MSSubClass MSZoning  LotFrontage  ...  SaleType SaleCondition SalePrice\n",
+              "0          60       RL         65.0  ...        WD        Normal    208500\n",
+              "\n",
+              "[1 rows x 76 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "fXKd0pJeHyvJ",
+        "outputId": "5ac33fb2-beb1-4c4b-aa7e-f538b1e26c36"
+      },
+      "source": [
+        "original_features=list(data.columns)\n",
+        "len(original_features)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "76"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "-oAnqVuLIF5m",
+        "outputId": "575abe0c-2ddf-49f2-9f29-f404b125870b"
+      },
+      "source": [
+        "features_missing_values=list(data.columns[data.isna().any()])\n",
+        "len(features_missing_values)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "15"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "YsRu2BYmJOu1",
+        "outputId": "31cf84ae-710e-45f5-90d8-6b13a24b188c"
+      },
+      "source": [
+        "len(data)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "1460"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "SG8UoVOqPcwp"
+      },
+      "source": [
+        "# Fill in Missing Features"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "kCE41DuSKmWp"
+      },
+      "source": [
+        "bfill,mean_fill=[],[]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "zT0VmWr2H8_7",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "12f086a4-3072-4368-f5f9-030778681e34"
+      },
+      "source": [
+        "for feature in features_missing_values:\n",
+        "  print(feature,' ',data[feature].isna().sum()/len(data)*100,' ',data[feature].dtype)\n",
+        "  if data[feature].dtype=='float64':\n",
+        "    mean_fill.append(feature)\n",
+        "  else:\n",
+        "    bfill.append(feature)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "LotFrontage   17.73972602739726   float64\n",
+            "MasVnrType   0.547945205479452   object\n",
+            "MasVnrArea   0.547945205479452   float64\n",
+            "BsmtQual   2.5342465753424657   object\n",
+            "BsmtCond   2.5342465753424657   object\n",
+            "BsmtExposure   2.6027397260273974   object\n",
+            "BsmtFinType1   2.5342465753424657   object\n",
+            "BsmtFinType2   2.6027397260273974   object\n",
+            "Electrical   0.0684931506849315   object\n",
+            "FireplaceQu   47.26027397260274   object\n",
+            "GarageType   5.5479452054794525   object\n",
+            "GarageYrBlt   5.5479452054794525   float64\n",
+            "GarageFinish   5.5479452054794525   object\n",
+            "GarageQual   5.5479452054794525   object\n",
+            "GarageCond   5.5479452054794525   object\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "y25NfqmoJ6RI",
+        "outputId": "a14cf5b4-f049-4a84-fbc3-c6048b1f5f93"
+      },
+      "source": [
+        "mean_fill"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['LotFrontage', 'MasVnrArea', 'GarageYrBlt']"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 12
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "KQW9dCMmKxee"
+      },
+      "source": [
+        "for feature in mean_fill:\n",
+        "  data[feature].fillna(data[feature].mean(),inplace=True)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "9Sx6f2HNK_5v"
+      },
+      "source": [
+        "for feature in bfill:\n",
+        "  data[feature].fillna(method='bfill',inplace=True)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "EGLomTfrLJ5w",
+        "outputId": "2f8a8013-8fd8-450c-d0c6-9e1a5cf0ed4f"
+      },
+      "source": [
+        "data.columns[data.isna().any()]"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Index(['FireplaceQu'], dtype='object')"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 15
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "HZ1QKcdeLTm5",
+        "outputId": "44a5f4c2-9394-4c46-d33a-960dee63372c"
+      },
+      "source": [
+        "data['FireplaceQu'].isna().sum()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "2"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 16
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Yho-jIdzLcRB"
+      },
+      "source": [
+        "data['FireplaceQu'].fillna(method='ffill',inplace=True)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "_NlPfUtTLmwd"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "jyzvz4xEPhjO"
+      },
+      "source": [
+        "# Encode the Dataset"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "4qWT-1D_L2V3",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "5cdbf57d-fa7c-4f87-b973-dcd42f566180"
+      },
+      "source": [
+        "categorical_features=list(data.select_dtypes(include=['object']).columns)\n",
+        "categorical_features"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['MSZoning',\n",
+              " 'Street',\n",
+              " 'LotShape',\n",
+              " 'LandContour',\n",
+              " 'Utilities',\n",
+              " 'LotConfig',\n",
+              " 'LandSlope',\n",
+              " 'Neighborhood',\n",
+              " 'Condition1',\n",
+              " 'Condition2',\n",
+              " 'BldgType',\n",
+              " 'HouseStyle',\n",
+              " 'RoofStyle',\n",
+              " 'RoofMatl',\n",
+              " 'Exterior1st',\n",
+              " 'Exterior2nd',\n",
+              " 'MasVnrType',\n",
+              " 'ExterQual',\n",
+              " 'ExterCond',\n",
+              " 'Foundation',\n",
+              " 'BsmtQual',\n",
+              " 'BsmtCond',\n",
+              " 'BsmtExposure',\n",
+              " 'BsmtFinType1',\n",
+              " 'BsmtFinType2',\n",
+              " 'Heating',\n",
+              " 'HeatingQC',\n",
+              " 'CentralAir',\n",
+              " 'Electrical',\n",
+              " 'KitchenQual',\n",
+              " 'Functional',\n",
+              " 'FireplaceQu',\n",
+              " 'GarageType',\n",
+              " 'GarageFinish',\n",
+              " 'GarageQual',\n",
+              " 'GarageCond',\n",
+              " 'PavedDrive',\n",
+              " 'SaleType',\n",
+              " 'SaleCondition']"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 18
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "EsT2Y4Z0M71C",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "755850b8-09c1-4efc-e7d8-41b9697fac56"
+      },
+      "source": [
+        "numerical=list(set(original_features)-set(categorical_features))\n",
+        "numerical"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['OpenPorchSF',\n",
+              " 'SalePrice',\n",
+              " 'FullBath',\n",
+              " 'MasVnrArea',\n",
+              " 'MoSold',\n",
+              " 'TotRmsAbvGrd',\n",
+              " 'ScreenPorch',\n",
+              " 'GarageArea',\n",
+              " 'BsmtFinSF1',\n",
+              " 'OverallQual',\n",
+              " 'LotArea',\n",
+              " 'KitchenAbvGr',\n",
+              " 'Fireplaces',\n",
+              " 'MiscVal',\n",
+              " 'LotFrontage',\n",
+              " 'TotalBsmtSF',\n",
+              " 'BsmtFinSF2',\n",
+              " 'YrSold',\n",
+              " '2ndFlrSF',\n",
+              " 'PoolArea',\n",
+              " 'YearBuilt',\n",
+              " 'GarageYrBlt',\n",
+              " 'BedroomAbvGr',\n",
+              " 'MSSubClass',\n",
+              " 'LowQualFinSF',\n",
+              " 'OverallCond',\n",
+              " 'GarageCars',\n",
+              " 'YearRemodAdd',\n",
+              " 'BsmtFullBath',\n",
+              " 'BsmtHalfBath',\n",
+              " 'HalfBath',\n",
+              " 'BsmtUnfSF',\n",
+              " '1stFlrSF',\n",
+              " 'EnclosedPorch',\n",
+              " '3SsnPorch',\n",
+              " 'WoodDeckSF',\n",
+              " 'GrLivArea']"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 19
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "UDKIiKVANTnd"
+      },
+      "source": [
+        "categorical_features"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "kM-GRn7aMvyv"
+      },
+      "source": [
+        "nominal=['MSZoning','LandContour','Neighborhood']\n",
+        "ordinal=list(set(categorical_features)-set(nominal))"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "b2TUXbefNp0c"
+      },
+      "source": [
+        "target=['SalePrice']"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "yFohCKevNuqT"
+      },
+      "source": [
+        "df_nominal=pd.get_dummies(data[nominal])"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "L7Hr2qrKOCsF"
+      },
+      "source": [
+        "for feature in ordinal:\n",
+        "  data[feature]=data[feature].astype('category').cat.codes\n",
+        "\n",
+        "df_ordinal=data[ordinal]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rIB43vbzOlRa",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 444
+        },
+        "outputId": "de5c28cc-f40d-40e7-f049-f1e6026a7d7c"
+      },
+      "source": [
+        "data[numerical]"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>OpenPorchSF</th>\n",
+              "      <th>SalePrice</th>\n",
+              "      <th>FullBath</th>\n",
+              "      <th>MasVnrArea</th>\n",
+              "      <th>MoSold</th>\n",
+              "      <th>TotRmsAbvGrd</th>\n",
+              "      <th>ScreenPorch</th>\n",
+              "      <th>GarageArea</th>\n",
+              "      <th>BsmtFinSF1</th>\n",
+              "      <th>OverallQual</th>\n",
+              "      <th>LotArea</th>\n",
+              "      <th>KitchenAbvGr</th>\n",
+              "      <th>Fireplaces</th>\n",
+              "      <th>MiscVal</th>\n",
+              "      <th>LotFrontage</th>\n",
+              "      <th>TotalBsmtSF</th>\n",
+              "      <th>BsmtFinSF2</th>\n",
+              "      <th>YrSold</th>\n",
+              "      <th>2ndFlrSF</th>\n",
+              "      <th>PoolArea</th>\n",
+              "      <th>YearBuilt</th>\n",
+              "      <th>GarageYrBlt</th>\n",
+              "      <th>BedroomAbvGr</th>\n",
+              "      <th>MSSubClass</th>\n",
+              "      <th>LowQualFinSF</th>\n",
+              "      <th>OverallCond</th>\n",
+              "      <th>GarageCars</th>\n",
+              "      <th>YearRemodAdd</th>\n",
+              "      <th>BsmtFullBath</th>\n",
+              "      <th>BsmtHalfBath</th>\n",
+              "      <th>HalfBath</th>\n",
+              "      <th>BsmtUnfSF</th>\n",
+              "      <th>1stFlrSF</th>\n",
+              "      <th>EnclosedPorch</th>\n",
+              "      <th>3SsnPorch</th>\n",
+              "      <th>WoodDeckSF</th>\n",
+              "      <th>GrLivArea</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>61</td>\n",
+              "      <td>208500</td>\n",
+              "      <td>2</td>\n",
+              "      <td>196.0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>8</td>\n",
+              "      <td>0</td>\n",
+              "      <td>548</td>\n",
+              "      <td>706</td>\n",
+              "      <td>7</td>\n",
+              "      <td>8450</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>65.0</td>\n",
+              "      <td>856</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2008</td>\n",
+              "      <td>854</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>2003.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>60</td>\n",
+              "      <td>0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>150</td>\n",
+              "      <td>856</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1710</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>0</td>\n",
+              "      <td>181500</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>6</td>\n",
+              "      <td>0</td>\n",
+              "      <td>460</td>\n",
+              "      <td>978</td>\n",
+              "      <td>6</td>\n",
+              "      <td>9600</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>80.0</td>\n",
+              "      <td>1262</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2007</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1976</td>\n",
+              "      <td>1976.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>20</td>\n",
+              "      <td>0</td>\n",
+              "      <td>8</td>\n",
+              "      <td>2</td>\n",
+              "      <td>1976</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>284</td>\n",
+              "      <td>1262</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>298</td>\n",
+              "      <td>1262</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>42</td>\n",
+              "      <td>223500</td>\n",
+              "      <td>2</td>\n",
+              "      <td>162.0</td>\n",
+              "      <td>9</td>\n",
+              "      <td>6</td>\n",
+              "      <td>0</td>\n",
+              "      <td>608</td>\n",
+              "      <td>486</td>\n",
+              "      <td>7</td>\n",
+              "      <td>11250</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>68.0</td>\n",
+              "      <td>920</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2008</td>\n",
+              "      <td>866</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2001</td>\n",
+              "      <td>2001.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>60</td>\n",
+              "      <td>0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2002</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>434</td>\n",
+              "      <td>920</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1786</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>35</td>\n",
+              "      <td>140000</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>7</td>\n",
+              "      <td>0</td>\n",
+              "      <td>642</td>\n",
+              "      <td>216</td>\n",
+              "      <td>7</td>\n",
+              "      <td>9550</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>60.0</td>\n",
+              "      <td>756</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2006</td>\n",
+              "      <td>756</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1915</td>\n",
+              "      <td>1998.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>70</td>\n",
+              "      <td>0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1970</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>540</td>\n",
+              "      <td>961</td>\n",
+              "      <td>272</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1717</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>84</td>\n",
+              "      <td>250000</td>\n",
+              "      <td>2</td>\n",
+              "      <td>350.0</td>\n",
+              "      <td>12</td>\n",
+              "      <td>9</td>\n",
+              "      <td>0</td>\n",
+              "      <td>836</td>\n",
+              "      <td>655</td>\n",
+              "      <td>8</td>\n",
+              "      <td>14260</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>84.0</td>\n",
+              "      <td>1145</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2008</td>\n",
+              "      <td>1053</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2000</td>\n",
+              "      <td>2000.0</td>\n",
+              "      <td>4</td>\n",
+              "      <td>60</td>\n",
+              "      <td>0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>3</td>\n",
+              "      <td>2000</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>490</td>\n",
+              "      <td>1145</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>192</td>\n",
+              "      <td>2198</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1455</th>\n",
+              "      <td>40</td>\n",
+              "      <td>175000</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>8</td>\n",
+              "      <td>7</td>\n",
+              "      <td>0</td>\n",
+              "      <td>460</td>\n",
+              "      <td>0</td>\n",
+              "      <td>6</td>\n",
+              "      <td>7917</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>62.0</td>\n",
+              "      <td>953</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2007</td>\n",
+              "      <td>694</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1999</td>\n",
+              "      <td>1999.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>60</td>\n",
+              "      <td>0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2000</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>953</td>\n",
+              "      <td>953</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1647</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1456</th>\n",
+              "      <td>0</td>\n",
+              "      <td>210000</td>\n",
+              "      <td>2</td>\n",
+              "      <td>119.0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>7</td>\n",
+              "      <td>0</td>\n",
+              "      <td>500</td>\n",
+              "      <td>790</td>\n",
+              "      <td>6</td>\n",
+              "      <td>13175</td>\n",
+              "      <td>1</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>85.0</td>\n",
+              "      <td>1542</td>\n",
+              "      <td>163</td>\n",
+              "      <td>2010</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1978</td>\n",
+              "      <td>1978.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>20</td>\n",
+              "      <td>0</td>\n",
+              "      <td>6</td>\n",
+              "      <td>2</td>\n",
+              "      <td>1988</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>589</td>\n",
+              "      <td>2073</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>349</td>\n",
+              "      <td>2073</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1457</th>\n",
+              "      <td>60</td>\n",
+              "      <td>266500</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>5</td>\n",
+              "      <td>9</td>\n",
+              "      <td>0</td>\n",
+              "      <td>252</td>\n",
+              "      <td>275</td>\n",
+              "      <td>7</td>\n",
+              "      <td>9042</td>\n",
+              "      <td>1</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2500</td>\n",
+              "      <td>66.0</td>\n",
+              "      <td>1152</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2010</td>\n",
+              "      <td>1152</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1941</td>\n",
+              "      <td>1941.0</td>\n",
+              "      <td>4</td>\n",
+              "      <td>70</td>\n",
+              "      <td>0</td>\n",
+              "      <td>9</td>\n",
+              "      <td>1</td>\n",
+              "      <td>2006</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>877</td>\n",
+              "      <td>1188</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2340</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1458</th>\n",
+              "      <td>0</td>\n",
+              "      <td>142125</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>4</td>\n",
+              "      <td>5</td>\n",
+              "      <td>0</td>\n",
+              "      <td>240</td>\n",
+              "      <td>49</td>\n",
+              "      <td>5</td>\n",
+              "      <td>9717</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>68.0</td>\n",
+              "      <td>1078</td>\n",
+              "      <td>1029</td>\n",
+              "      <td>2010</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1950</td>\n",
+              "      <td>1950.0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>20</td>\n",
+              "      <td>0</td>\n",
+              "      <td>6</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1996</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1078</td>\n",
+              "      <td>112</td>\n",
+              "      <td>0</td>\n",
+              "      <td>366</td>\n",
+              "      <td>1078</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1459</th>\n",
+              "      <td>68</td>\n",
+              "      <td>147500</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>6</td>\n",
+              "      <td>6</td>\n",
+              "      <td>0</td>\n",
+              "      <td>276</td>\n",
+              "      <td>830</td>\n",
+              "      <td>5</td>\n",
+              "      <td>9937</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>75.0</td>\n",
+              "      <td>1256</td>\n",
+              "      <td>290</td>\n",
+              "      <td>2008</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1965</td>\n",
+              "      <td>1965.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>20</td>\n",
+              "      <td>0</td>\n",
+              "      <td>6</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1965</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>136</td>\n",
+              "      <td>1256</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>736</td>\n",
+              "      <td>1256</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>1460 rows × 37 columns</p>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "      OpenPorchSF  SalePrice  FullBath  ...  3SsnPorch  WoodDeckSF  GrLivArea\n",
+              "0              61     208500         2  ...          0           0       1710\n",
+              "1               0     181500         2  ...          0         298       1262\n",
+              "2              42     223500         2  ...          0           0       1786\n",
+              "3              35     140000         1  ...          0           0       1717\n",
+              "4              84     250000         2  ...          0         192       2198\n",
+              "...           ...        ...       ...  ...        ...         ...        ...\n",
+              "1455           40     175000         2  ...          0           0       1647\n",
+              "1456            0     210000         2  ...          0         349       2073\n",
+              "1457           60     266500         2  ...          0           0       2340\n",
+              "1458            0     142125         1  ...          0         366       1078\n",
+              "1459           68     147500         1  ...          0         736       1256\n",
+              "\n",
+              "[1460 rows x 37 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 25
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "4qJ-B4HhO4rK"
+      },
+      "source": [
+        "new_data=pd.concat([df_nominal,df_ordinal,data[numerical]],axis=1)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Dxn5cPYqPEtL",
+        "outputId": "135c0a0a-4710-4c78-bc8b-4f799e108498"
+      },
+      "source": [
+        "new_data.shape"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(1460, 107)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 27
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ynBgewRYPIzj"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "bFgsoRFNPlXP"
+      },
+      "source": [
+        "# Standardize"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "RK7ZuqtsPp5z"
+      },
+      "source": [
+        "new_data.drop('SalePrice',axis=1,inplace=True)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "_YN320_WQNwu"
+      },
+      "source": [
+        "X=new_data.to_numpy()"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "6nrO1F1VRPf8"
+      },
+      "source": [
+        "X[0]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Y82pjfwTWP9i"
+      },
+      "source": [
+        "X=StandardScaler().fit_transform(X)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tCusHeVeOEZR"
+      },
+      "source": [
+        "X[0]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "1fUYBYpdQmJO"
+      },
+      "source": [
+        "y=data[target]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "D3vzwzUoQ0to"
+      },
+      "source": [
+        "y=y.to_numpy()"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "t6fa6-LVRGhW",
+        "outputId": "88bb5bae-849e-4d4f-c7ec-d5231c4c85d5"
+      },
+      "source": [
+        "y.shape"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(1460, 1)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 43
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "uu6nQchuPV7N"
+      },
+      "source": [
+        "y"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "R_ZoVQpBPY2V"
+      },
+      "source": [
+        "y=StandardScaler().fit_transform(y)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "kZ7Og1k1Pc6I",
+        "outputId": "c29800cd-f14c-4543-fb64-1aa996fa558d"
+      },
+      "source": [
+        "y"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[ 0.34727322],\n",
+              "       [ 0.00728832],\n",
+              "       [ 0.53615372],\n",
+              "       ...,\n",
+              "       [ 1.07761115],\n",
+              "       [-0.48852299],\n",
+              "       [-0.42084081]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 61
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "4k4WmbkQPd_O",
+        "outputId": "5b14bccb-df72-41da-edca-3680efb77926"
+      },
+      "source": [
+        "X.shape"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(1460, 106)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 47
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "WQ5eImT_P1xu"
+      },
+      "source": [
+        "# Feature Extraction Using PCA"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "9ve1tg9_P8lu"
+      },
+      "source": [
+        "pca=PCA(n_components=2)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "SnovQPpmQN_G"
+      },
+      "source": [
+        "p_components=pca.fit_transform(X)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "k6lWd7pLQiJH",
+        "outputId": "0d0b2a07-2872-4d3e-e390-004e20053a9c"
+      },
+      "source": [
+        "p_components"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[ 2.44330924, -1.27768824],\n",
+              "       [ 0.31646163,  2.63861542],\n",
+              "       [ 2.85722047, -0.81049207],\n",
+              "       ...,\n",
+              "       [ 1.26182179, -0.86167994],\n",
+              "       [-2.85097066,  3.29206884],\n",
+              "       [-0.77738735,  2.7892749 ]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 55
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "PSJL6HXWQu_Y",
+        "outputId": "cddbf2dc-2c76-4d8c-a0e9-f36b3569fc3e"
+      },
+      "source": [
+        "pca.explained_variance_ratio_"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([0.10560233, 0.04472091])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 56
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "fv4hFLXzSKxg"
+      },
+      "source": [
+        "# New Dataset Ready for Training\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "zXdqXKSGRfbB"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "OFeVTQwcUT0a"
+      },
+      "source": [
+        "# Train the Model"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "uZZnI0haUWSQ"
+      },
+      "source": [
+        "reg=LassoCV()"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "mvatk3RxUa7k",
+        "outputId": "3656869b-9bb6-4af7-bf57-5949ab574e48"
+      },
+      "source": [
+        "reg.fit(p_components,y)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "/usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:1088: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().\n",
+            "  y = column_or_1d(y, warn=True)\n"
+          ],
+          "name": "stderr"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "LassoCV(alphas=None, copy_X=True, cv=None, eps=0.001, fit_intercept=True,\n",
+              "        max_iter=1000, n_alphas=100, n_jobs=None, normalize=False,\n",
+              "        positive=False, precompute='auto', random_state=None,\n",
+              "        selection='cyclic', tol=0.0001, verbose=False)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 65
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "a3unaxeaUscx",
+        "outputId": "fc315fdf-422e-425f-e362-c9878bd2a0de"
+      },
+      "source": [
+        "reg.coef_"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([0.25387739, 0.01886734])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 66
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "WdQH1vO1U_KW"
+      },
+      "source": [
+        "y = W_1*x_1 + W_2*x_2 "
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "UXXtyS1HVKNQ"
+      },
+      "source": [
+        "y=mx+c"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "BlZm8b7YVMrp"
+      },
+      "source": [
+        "y=wx+b"
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
